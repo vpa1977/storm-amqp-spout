@@ -56,7 +56,7 @@ public class SharedQueueWithBinding implements QueueDeclaration {
      */
     @Override
     public Queue.DeclareOk declare(Channel channel) throws IOException {
-        channel.exchangeDeclarePassive(exchange);
+        channel.exchangeDeclare(exchange, "fanout");
 
         final Queue.DeclareOk queue = channel.queueDeclare(
                 queueName,

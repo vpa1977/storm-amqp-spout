@@ -1,6 +1,7 @@
 package com.rapportive.storm.spout;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -14,11 +15,14 @@ import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.ShutdownSignalException;
 
 import com.rapportive.storm.amqp.QueueDeclaration;
+
+import backtype.storm.Config;
 import backtype.storm.spout.Scheme;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.topology.base.BaseRichSpout;
 
 import backtype.storm.utils.Utils;
 
@@ -56,7 +60,10 @@ import backtype.storm.utils.Utils;
  *
  * @author Sam Stokes (sam@rapportive.com)
  */
-public class AMQPSpout implements IRichSpout {
+public class AMQPSpout extends BaseRichSpout implements IRichSpout {
+	
+	
+
     private static final long serialVersionUID = 11258942292629263L;
 
     private static final Logger log = Logger.getLogger(AMQPSpout.class);
@@ -96,9 +103,7 @@ public class AMQPSpout implements IRichSpout {
     private final String amqpUsername;
     private final String amqpPassword;
     private final String amqpVhost;
-
     private final QueueDeclaration queueDeclaration;
-
     private final Scheme serialisationScheme;
 
     private transient Connection amqpConnection;
@@ -109,7 +114,7 @@ public class AMQPSpout implements IRichSpout {
     private SpoutOutputCollector collector;
 
     private int prefetchCount;
-
+    
 
     /**
      * Create a new AMQP spout.  When
@@ -135,7 +140,6 @@ public class AMQPSpout implements IRichSpout {
         this.amqpPassword = password;
         this.amqpVhost = vhost;
         this.queueDeclaration = queueDeclaration;
-
         this.serialisationScheme = scheme;
     }
 
@@ -253,6 +257,7 @@ public class AMQPSpout implements IRichSpout {
      */
     @Override
     public void open(@SuppressWarnings("rawtypes") Map config, TopologyContext context, SpoutOutputCollector collector) {
+
         Long prefetchCount = (Long) config.get(CONFIG_PREFETCH_COUNT);
         if (prefetchCount == null) {
             log.info("Using default prefetch-count");
@@ -272,6 +277,9 @@ public class AMQPSpout implements IRichSpout {
     }
 
 
+
+
+
     private void setupAMQP() throws IOException {
         final int prefetchCount = this.prefetchCount;
 
@@ -285,14 +293,16 @@ public class AMQPSpout implements IRichSpout {
 
         this.amqpConnection = connectionFactory.newConnection();
         this.amqpChannel = amqpConnection.createChannel();
-
-        log.info("Setting basic.qos prefetch-count to " + prefetchCount);
-        amqpChannel.basicQos(prefetchCount);
+        
+        
 
         final Queue.DeclareOk queue = queueDeclaration.declare(amqpChannel);
         final String queueName = queue.getQueue();
         log.info("Consuming queue " + queueName);
-
+        
+        log.info("Setting basic.qos prefetch-count to " + prefetchCount);
+        amqpChannel.basicQos(prefetchCount);
+        
         this.amqpConsumer = new QueueingConsumer(amqpChannel);
         this.amqpConsumerTag = amqpChannel.basicConsume(queueName, false /* no auto-ack */, amqpConsumer);
     }
@@ -318,14 +328,4 @@ public class AMQPSpout implements IRichSpout {
     }
 
 
-    /**
-     * This spout can be distributed among multiple workers if the
-     * {@link QueueDeclaration} supports it.
-     *
-     * @see QueueDeclaration#isParallelConsumable()
-     */
-    @Override
-    public boolean isDistributed() {
-        return queueDeclaration.isParallelConsumable();
-    }
 }
