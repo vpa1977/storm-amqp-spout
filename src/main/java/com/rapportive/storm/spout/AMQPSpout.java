@@ -83,7 +83,7 @@ public class AMQPSpout extends BaseRichSpout implements IRichSpout {
      * but that is not allowed here to avoid unbounded buffer growth.</p>
      */
     public static final String CONFIG_PREFETCH_COUNT = "amqp.prefetch.count";
-    private static final long DEFAULT_PREFETCH_COUNT = 100;
+    private static final long DEFAULT_PREFETCH_COUNT = 100000;
 
     /**
      * Time in milliseconds to wait for a message from the queue if there is
