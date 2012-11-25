@@ -13,7 +13,7 @@
     <dependency>
       <groupId>storm</groupId>
       <artifactId>storm</artifactId>
-      <version>0.8.2-wip8</version>
+      <version>0.8.2-wip18</version>
     </dependency>
     <dependency>
       <groupId>com.rabbitmq</groupId>
@@ -25,6 +25,7 @@
       <artifactId>log4j</artifactId>
       <version>1.2.16</version>
     </dependency>
+            
   </dependencies>
   <build>
     <plugins>
